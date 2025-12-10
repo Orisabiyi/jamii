@@ -1,4 +1,5 @@
-import { Property, User, UserRole } from '../types';
+
+import { Property, User, UserRole } from '@/app/types/gen';
 
 const STORAGE_KEYS = {
   USERS: 'jamii_users',
@@ -14,7 +15,8 @@ const MOCK_USERS: User[] = [
     email: 'sarah@example.com',
     role: UserRole.OWNER,
     avatar: 'https://picsum.photos/seed/sarah/150/150',
-    bio: 'Real estate enthusiast and super host.'
+    bio: 'Real estate enthusiast and super host.',
+    saved: []
   },
   {
     id: 'u2',
@@ -22,6 +24,7 @@ const MOCK_USERS: User[] = [
     email: 'mike@example.com',
     role: UserRole.RENTER,
     avatar: 'https://picsum.photos/seed/mike/150/150',
+    saved: ['p1']
   }
 ];
 
@@ -86,6 +89,8 @@ class MockDatabase {
   }
 
   private init() {
+    if (typeof window === 'undefined') return;
+
     if (!localStorage.getItem(STORAGE_KEYS.PROPERTIES)) {
       localStorage.setItem(STORAGE_KEYS.PROPERTIES, JSON.stringify(MOCK_PROPERTIES));
     }
@@ -95,6 +100,7 @@ class MockDatabase {
   }
 
   getProperties(): Property[] {
+    if (typeof window === 'undefined') return [];
     const data = localStorage.getItem(STORAGE_KEYS.PROPERTIES);
     return data ? JSON.parse(data) : [];
   }
@@ -117,7 +123,7 @@ class MockDatabase {
   toggleLike(propertyId: string, userId: string): boolean {
     const properties = this.getProperties();
     const propertyIndex = properties.findIndex(p => p.id === propertyId);
-    
+
     if (propertyIndex === -1) return false;
 
     const property = properties[propertyIndex];
@@ -136,6 +142,40 @@ class MockDatabase {
     return isLiked;
   }
 
+  toggleSave(propertyId: string, userId: string): boolean {
+    const users = this.getUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+
+    if (userIndex === -1) return false;
+
+    const user = users[userIndex];
+    // Ensure saved array exists
+    if (!user.saved) user.saved = [];
+
+    const saveIndex = user.saved.indexOf(propertyId);
+    let isSaved = false;
+
+    if (saveIndex > -1) {
+      user.saved.splice(saveIndex, 1);
+    } else {
+      user.saved.push(propertyId);
+      isSaved = true;
+    }
+
+    users[userIndex] = user;
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+
+    // Update session if it's the current user
+    const currentUser = this.getCurrentUser();
+    if (currentUser && currentUser.id === userId) {
+      currentUser.saved = user.saved;
+      this.persistSession(currentUser);
+    }
+
+    return isSaved;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addComment(propertyId: string, comment: any): void {
     const properties = this.getProperties();
     const property = properties.find(p => p.id === propertyId);
@@ -146,6 +186,7 @@ class MockDatabase {
   }
 
   getUsers(): User[] {
+    if (typeof window === 'undefined') return [];
     return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
   }
 
@@ -159,13 +200,13 @@ class MockDatabase {
 
   registerUser(user: User): User {
     const users = this.getUsers();
+    user.saved = [];
     users.push(user);
     localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
     this.persistSession(user);
     return user;
   }
 
-  // Simplified auth for prototype
   login(email: string): User | null {
     const user = this.getUserByEmail(email);
     if (user) {
@@ -180,6 +221,7 @@ class MockDatabase {
   }
 
   getCurrentUser(): User | null {
+    if (typeof window === 'undefined') return null;
     const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
     return data ? JSON.parse(data) : null;
   }

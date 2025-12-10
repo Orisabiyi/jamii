@@ -1,34 +1,35 @@
 
 import React from 'react';
 import { Compass, PlusSquare, User as UserIcon, LogOut, Heart } from 'lucide-react';
-import { User } from '../types';
-import { useRouter } from '../hooks/useRouter';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '../lib/authContext';
+import Image from 'next/image';
 
-interface NavbarProps {
-  user: User | null;
-  onLogout: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
+export const Navbar: React.FC = () => {
   const router = useRouter();
-  const currentPage = router.pathname;
+  const currentPage = usePathname();
+  const { user, logout } = useAuth();
 
   const onNavigate = (path: string) => {
     router.push(path);
   };
 
-  const navItemClass = (path: string) => 
-    `p-3 rounded-xl transition-all duration-200 flex flex-col items-center justify-center gap-1 ${
-      currentPage === path 
-        ? 'text-indigo-600 bg-indigo-50 font-semibold' 
-        : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  const navItemClass = (path: string) =>
+    `p-3 rounded-xl transition-all duration-200 flex flex-col items-center justify-center gap-1 ${currentPage === path
+      ? 'text-indigo-600 bg-indigo-50 font-semibold'
+      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
     }`;
 
   return (
     <>
       {/* Desktop/Tablet Header */}
       <header className="fixed top-0 inset-x-0 bg-white border-b border-gray-100 z-50 h-16 px-4 md:px-8 flex items-center justify-between">
-        <div 
+        <div
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => onNavigate('/')}
         >
@@ -39,14 +40,14 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
         </div>
 
         <div className="hidden md:flex items-center gap-6">
-          <button 
+          <button
             onClick={() => onNavigate('/')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${currentPage === '/' ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
           >
             <Compass size={20} />
             Discover
           </button>
-          <button 
+          <button
             onClick={() => onNavigate('/saved')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${currentPage === '/saved' ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
           >
@@ -68,9 +69,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                 </button>
               )}
               <div className="relative group">
-                <img 
-                  src={user.avatar} 
-                  alt={user.name} 
+                <Image
+                  src={user.avatar}
+                  alt={user.name}
                   className="w-9 h-9 rounded-full object-cover border border-gray-200 cursor-pointer"
                   onClick={() => onNavigate('/profile')}
                 />
@@ -79,8 +80,8 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
                     <p className="text-sm font-semibold">{user.name}</p>
                     <p className="text-xs text-gray-500">{user.role}</p>
                   </div>
-                  <button 
-                    onClick={onLogout}
+                  <button
+                    onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                   >
                     <LogOut size={16} /> Logout
@@ -105,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onLogout }) => {
           <Compass size={24} />
           <span className="text-[10px]">Discover</span>
         </button>
-        
+
         {user?.role === 'OWNER' && (
           <button onClick={() => onNavigate('/create')} className={navItemClass('/create')}>
             <PlusSquare size={24} />

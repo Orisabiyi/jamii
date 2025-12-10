@@ -1,3 +1,4 @@
+
 export enum UserRole {
   RENTER = 'RENTER',
   OWNER = 'OWNER'
@@ -10,6 +11,7 @@ export interface User {
   role: UserRole;
   avatar: string;
   bio?: string;
+  saved?: string[];
 }
 
 export interface Comment {

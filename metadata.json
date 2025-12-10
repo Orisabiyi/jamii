@@ -1,9 +1,0 @@
-{
-  "name": "Copy of Jamii",
-  "description": "A social-media style platform for discovering and renting properties. Features an interactive feed, AI-assisted listing creation, and instant engagement.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone",
-    "geolocation"
-  ]
-}
