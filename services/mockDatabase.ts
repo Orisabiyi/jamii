@@ -99,6 +99,11 @@ class MockDatabase {
     return data ? JSON.parse(data) : [];
   }
 
+  getPropertiesByOwner(ownerId: string): Property[] {
+    const all = this.getProperties();
+    return all.filter(p => p.ownerId === ownerId);
+  }
+
   getPropertyById(id: string): Property | undefined {
     return this.getProperties().find(p => p.id === id);
   }
@@ -140,15 +145,38 @@ class MockDatabase {
     }
   }
 
+  getUsers(): User[] {
+    return JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
+  }
+
+  getUserByEmail(email: string): User | undefined {
+    return this.getUsers().find(u => u.email === email);
+  }
+
+  getUserById(id: string): User | undefined {
+    return this.getUsers().find(u => u.id === id);
+  }
+
+  registerUser(user: User): User {
+    const users = this.getUsers();
+    users.push(user);
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+    this.persistSession(user);
+    return user;
+  }
+
+  // Simplified auth for prototype
   login(email: string): User | null {
-    // Simplified auth for prototype
-    const users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS) || '[]');
-    const user = users.find((u: User) => u.email === email);
+    const user = this.getUserByEmail(email);
     if (user) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      this.persistSession(user);
       return user;
     }
     return null;
+  }
+
+  persistSession(user: User) {
+    localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
   }
 
   getCurrentUser(): User | null {

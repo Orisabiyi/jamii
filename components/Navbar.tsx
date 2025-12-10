@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, PlusSquare, User as UserIcon, LogOut, Heart } from 'lucide-react';
+import { Compass, PlusSquare, User as UserIcon, LogOut, Heart } from 'lucide-react';
 import { User } from '../types';
 
 interface NavbarProps {
@@ -23,7 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNavigate, currentPage, o
       <header className="fixed top-0 inset-x-0 bg-white border-b border-gray-100 z-50 h-16 px-4 md:px-8 flex items-center justify-between">
         <div 
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => onNavigate('feed')}
+          onClick={() => onNavigate('discover')}
         >
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
             J
@@ -33,16 +33,18 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNavigate, currentPage, o
 
         <div className="hidden md:flex items-center gap-6">
           <button 
-            onClick={() => onNavigate('feed')}
-            className={currentPage === 'feed' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-900'}
+            onClick={() => onNavigate('discover')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${currentPage === 'discover' ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
           >
-            Feed
+            <Compass size={20} />
+            Discover
           </button>
           <button 
             onClick={() => onNavigate('saved')}
-            className={currentPage === 'saved' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-900'}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${currentPage === 'saved' ? 'text-indigo-600 bg-indigo-50 font-medium' : 'text-gray-500 hover:text-gray-900'}`}
           >
-            Saved
+            <Heart size={20} />
+            Favorites
           </button>
         </div>
 
@@ -92,9 +94,9 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNavigate, currentPage, o
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-50 flex justify-around p-2 pb-safe">
-        <button onClick={() => onNavigate('feed')} className={navItemClass('feed')}>
-          <Home size={24} />
-          <span className="text-[10px]">Feed</span>
+        <button onClick={() => onNavigate('discover')} className={navItemClass('discover')}>
+          <Compass size={24} />
+          <span className="text-[10px]">Discover</span>
         </button>
         
         {user?.role === 'OWNER' && (

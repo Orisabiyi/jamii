@@ -182,7 +182,7 @@ export const CreateListing: React.FC<CreateListingProps> = ({ user, onSuccess })
                 <input
                   type="number"
                   name="bedrooms"
-                  className="w-full p-3 border border-gray-200 rounded-lg text-gray-900"
+                  className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900"
                   value={formData.bedrooms}
                   onChange={handleChange}
                 />
@@ -192,7 +192,7 @@ export const CreateListing: React.FC<CreateListingProps> = ({ user, onSuccess })
                 <input
                   type="number"
                   name="bathrooms"
-                  className="w-full p-3 border border-gray-200 rounded-lg text-gray-900"
+                  className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-900"
                   value={formData.bathrooms}
                   onChange={handleChange}
                 />
@@ -219,7 +219,7 @@ export const CreateListing: React.FC<CreateListingProps> = ({ user, onSuccess })
           <textarea
             name="description"
             rows={4}
-            className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm text-gray-900"
+            className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm bg-white text-gray-900"
             placeholder="Describe your property..."
             value={formData.description}
             onChange={handleChange}
@@ -230,7 +230,7 @@ export const CreateListing: React.FC<CreateListingProps> = ({ user, onSuccess })
             <input
               type="text"
               name="amenities"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm text-gray-900"
+              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm bg-white text-gray-900"
               placeholder="Wifi, Gym, Pool..."
               value={formData.amenities}
               onChange={handleChange}

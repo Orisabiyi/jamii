@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, MapPin, Bed, Bath, ChevronLeft, ChevronRight, Share2, Video } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Bed, Bath, ChevronLeft, ChevronRight, Share2, Video, Bookmark, Check } from 'lucide-react';
 import { Property, User } from '../types';
 
 interface PropertyCardProps {
@@ -7,12 +7,15 @@ interface PropertyCardProps {
   currentUser: User | null;
   onLike: (id: string) => void;
   onComment: (id: string, content: string) => void;
+  onProfileClick: (userId: string) => void;
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUser, onLike, onComment }) => {
+export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUser, onLike, onComment, onProfileClick }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [isSaved, setIsSaved] = useState(false); // Local state for prototype
+  const [justShared, setJustShared] = useState(false);
 
   const isLiked = currentUser && property.likes.includes(currentUser.id);
 
@@ -40,18 +43,46 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUse
     }
   };
 
+  const handleSave = () => {
+    setIsSaved(!isSaved);
+    // In a real app, this would trigger an API call to add to collection
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: property.title,
+      text: `Check out ${property.title} in ${property.location} on Jamii!`,
+      url: window.location.href, // In a real app, append ?propertyId=${property.id}
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Share canceled');
+      }
+    } else {
+      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
+      setJustShared(true);
+      setTimeout(() => setJustShared(false), 2000);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6 max-w-xl mx-auto">
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => onProfileClick(property.ownerId)}
+        >
           <img 
             src={property.ownerAvatar} 
             alt={property.ownerName} 
-            className="w-10 h-10 rounded-full object-cover border border-gray-100"
+            className="w-10 h-10 rounded-full object-cover border border-gray-100 group-hover:ring-2 group-hover:ring-indigo-100 transition-all"
           />
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight">{property.ownerName}</h3>
+            <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-indigo-600 transition-colors">{property.ownerName}</h3>
             <p className="text-xs text-gray-500">{property.location}</p>
           </div>
         </div>
@@ -104,7 +135,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUse
           </>
         )}
         
-        {/* Type Indicator Badge (Optional, but nice for UX) */}
+        {/* Type Indicator Badge */}
         {mediaItems[currentImageIndex].type === 'video' && (
           <div className="absolute top-3 right-3 bg-black/60 text-white p-1.5 rounded-full z-0 pointer-events-none">
              <Video size={14} />
@@ -130,10 +161,19 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUse
             >
               <MessageCircle size={24} />
             </button>
-            <button className="text-gray-600 hover:text-gray-900">
-              <Share2 size={24} />
+            <button 
+              onClick={handleShare}
+              className="text-gray-600 hover:text-gray-900 relative"
+            >
+              {justShared ? <Check size={24} className="text-green-600" /> : <Share2 size={24} />}
             </button>
           </div>
+          <button 
+            onClick={handleSave}
+            className={`transition-colors ${isSaved ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
+          >
+            <Bookmark size={24} fill={isSaved ? "currentColor" : "none"} />
+          </button>
         </div>
 
         <div className="mb-2">
