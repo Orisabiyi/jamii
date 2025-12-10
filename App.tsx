@@ -1,109 +1,104 @@
+
 import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
-import { Feed } from './pages/Feed';
-import { CreateListing } from './pages/CreateListing';
-import { Login } from './pages/Login';
-import { Profile } from './pages/Profile';
+import RootLayout from './app/layout';
+import DiscoverPage from './app/page';
+import CreateListingPage from './app/create/page';
+import LoginPage from './app/login/page';
+import ProfilePage from './app/profile/page';
+import SavedPage from './app/saved/page';
 import { db } from './services/mockDatabase';
 import { User } from './types';
+import { RouterContext } from './hooks/useRouter';
+
+// Simple URL Parser for prototype
+const parseUrl = (path: string) => {
+  const [pathname, search] = path.split('?');
+  const query: Record<string, string> = {};
+  if (search) {
+    search.split('&').forEach(part => {
+      const [key, value] = part.split('=');
+      query[key] = decodeURIComponent(value);
+    });
+  }
+  return { pathname, query };
+};
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState('discover');
-  const [viewProfileId, setViewProfileId] = useState<string | null>(null);
-
+  const [currentPath, setCurrentPath] = useState('/');
+  
+  // Initialize user
   useEffect(() => {
-    // Check for persisted session
     const currentUser = db.getCurrentUser();
     if (currentUser) {
       setUser(currentUser);
     }
   }, []);
 
-  const handleLogin = (loggedInUser: User) => {
-    setUser(loggedInUser);
-    setCurrentPage('discover');
+  // Router Implementation
+  const { pathname, query } = parseUrl(currentPath);
+
+  const routerValue = {
+    pathname,
+    query,
+    push: (path: string) => {
+      setCurrentPath(path);
+      window.scrollTo(0, 0);
+    },
+    replace: (path: string) => {
+      setCurrentPath(path);
+      window.scrollTo(0, 0);
+    },
+    back: () => {
+      // Simple back implementation (doesn't hold history in this simple mock)
+      setCurrentPath('/');
+    }
   };
 
   const handleLogout = () => {
     db.logout();
     setUser(null);
-    setCurrentPage('login');
-    setViewProfileId(null);
+    routerValue.push('/login');
   };
 
-  const handleViewProfile = (userId: string) => {
-    setViewProfileId(userId);
-    setCurrentPage('view_profile');
-    window.scrollTo(0, 0);
+  const handleLogin = (loggedInUser: User) => {
+    setUser(loggedInUser);
+    routerValue.push('/');
   };
 
+  // Route Rendering
   const renderPage = () => {
-    switch (currentPage) {
-      case 'discover':
-      case 'feed': // Fallback for legacy state
-        return <Feed user={user} onProfileClick={handleViewProfile} />;
-      
-      case 'create':
-        return user ? (
-          <CreateListing 
-            user={user} 
-            onSuccess={() => setCurrentPage('discover')} 
-          />
-        ) : <Login onLogin={handleLogin} />;
-      
-      case 'saved':
-        // Reuse feed logic but filter for saved in a real app
-        // Here we just show the feed component with a title for prototype
-        return (
-          <div className="pt-20 text-center">
-            <h2 className="text-xl font-bold mb-4">Your Favorites</h2>
-            <Feed user={user} onProfileClick={handleViewProfile} />
-          </div>
-        );
-      
-      case 'profile':
-        // Navigate to Current User's profile
-        if (user) {
-          return <Profile userId={user.id} currentUser={user} onBack={() => setCurrentPage('discover')} />;
-        }
-        return <Login onLogin={handleLogin} />;
-      
-      case 'view_profile':
-        if (viewProfileId) {
-          return <Profile userId={viewProfileId} currentUser={user} onBack={() => setCurrentPage('discover')} />;
-        }
-        return <Feed user={user} onProfileClick={handleViewProfile} />;
-
-      case 'login':
-        return <Login onLogin={handleLogin} />;
-      
+    switch (pathname) {
+      case '/':
+        return <DiscoverPage user={user} />;
+      case '/login':
+        return <LoginPage onLogin={handleLogin} />;
+      case '/create':
+        return user ? <CreateListingPage user={user} /> : <LoginPage onLogin={handleLogin} />;
+      case '/profile':
+        return <ProfilePage currentUser={user} />;
+      case '/saved':
+        return <SavedPage user={user} />;
       default:
-        return <Feed user={user} onProfileClick={handleViewProfile} />;
+        return <DiscoverPage user={user} />;
     }
   };
 
-  if (currentPage === 'login' && !user) {
-    return <Login onLogin={handleLogin} />;
+  // If on login page, don't wrap in RootLayout (matches typical Next.js auth patterns)
+  if (pathname === '/login') {
+    return (
+      <RouterContext.Provider value={routerValue}>
+        {renderPage()}
+      </RouterContext.Provider>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <Navbar 
-        user={user} 
-        onNavigate={(page) => {
-          setCurrentPage(page);
-          if (page === 'profile' && user) {
-            setViewProfileId(user.id);
-          }
-        }} 
-        currentPage={currentPage}
-        onLogout={handleLogout}
-      />
-      <main>
+    <RouterContext.Provider value={routerValue}>
+      <RootLayout user={user} onLogout={handleLogout}>
         {renderPage()}
-      </main>
-    </div>
+      </RootLayout>
+    </RouterContext.Provider>
   );
 };
 

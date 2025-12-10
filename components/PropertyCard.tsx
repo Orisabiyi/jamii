@@ -1,25 +1,26 @@
+
 import React, { useState } from 'react';
 import { Heart, MessageCircle, MapPin, Bed, Bath, ChevronLeft, ChevronRight, Share2, Video, Bookmark, Check } from 'lucide-react';
 import { Property, User } from '../types';
+import { useRouter } from '../hooks/useRouter';
 
 interface PropertyCardProps {
   property: Property;
   currentUser: User | null;
   onLike: (id: string) => void;
   onComment: (id: string, content: string) => void;
-  onProfileClick: (userId: string) => void;
 }
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUser, onLike, onComment, onProfileClick }) => {
+export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUser, onLike, onComment }) => {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [isSaved, setIsSaved] = useState(false); // Local state for prototype
+  const [isSaved, setIsSaved] = useState(false);
   const [justShared, setJustShared] = useState(false);
 
   const isLiked = currentUser && property.likes.includes(currentUser.id);
 
-  // Combine video and images into one media array
   const mediaItems = [
     ...(property.video ? [{ type: 'video' as const, url: property.video }] : []),
     ...property.images.map(img => ({ type: 'image' as const, url: img }))
@@ -45,14 +46,13 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUse
 
   const handleSave = () => {
     setIsSaved(!isSaved);
-    // In a real app, this would trigger an API call to add to collection
   };
 
   const handleShare = async () => {
     const shareData = {
       title: property.title,
       text: `Check out ${property.title} in ${property.location} on Jamii!`,
-      url: window.location.href, // In a real app, append ?propertyId=${property.id}
+      url: window.location.href,
     };
 
     if (navigator.share) {
@@ -68,13 +68,17 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUse
     }
   };
 
+  const handleProfileClick = () => {
+    router.push(`/profile?id=${property.ownerId}`);
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6 max-w-xl mx-auto">
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <div 
           className="flex items-center gap-3 cursor-pointer group"
-          onClick={() => onProfileClick(property.ownerId)}
+          onClick={handleProfileClick}
         >
           <img 
             src={property.ownerAvatar} 
