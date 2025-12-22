@@ -1,6 +1,6 @@
 "use client";
 
-import { store } from "@/lib/store";
+// import { store } from "@/lib/store";
 import { Button, Input } from "@/components/UI";
 
 export default function Page() {
@@ -16,13 +16,13 @@ export default function Page() {
         <div className="space-y-4">
           <Input label="Email Address" placeholder="you@example.com" />
           <Input label="Password" type="password" />
-          <Button className="w-full" onClick={() => store.login("renter")}>
+          <Button className="w-full">
             Log in as Renter
           </Button>
           <Button
             variant="secondary"
             className="w-full"
-            onClick={() => store.login("owner")}>
+          >
             Log in as Owner
           </Button>
         </div>

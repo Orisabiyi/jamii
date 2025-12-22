@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { Search, LayoutGrid } from 'lucide-react';
-import { store } from '@/lib/store';
 import { Button } from '@/components/UI';
 import { UserType } from '@/types/general';
 
@@ -23,7 +22,7 @@ export default function Page() {
             <h3 className="font-bold">List Property</h3>
           </div>
         </div>
-        <Button className="w-full" disabled={!role} onClick={() => store.login(role)}>Create Account</Button>
+        <Button className="w-full" disabled={!role}>Create Account</Button>
       </div>
     </div>
   );

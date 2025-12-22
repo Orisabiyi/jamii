@@ -38,3 +38,15 @@ export interface Property {
   isLiked?: boolean;
   isSaved?: boolean;
 }
+
+export interface StoreState {
+  user: User | null
+  path: string
+  properties: Property[]
+  propertyDetailId: string | null
+  login: (role: UserType) => void
+  logout: () => void;
+  navigate: (path: string, id?: string) => void;
+  toggleLike: (id: string) => void;
+  addProperty: (property: Property) => void;
+}

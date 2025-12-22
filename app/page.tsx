@@ -5,7 +5,7 @@ import { useStore } from '@/lib/store';
 import { PropertyCard } from '../components/PropertyCard';
 
 export default function Page() {
-  const { properties } = useStore();
+  const properties = useStore((state) => state.properties);
 
   return (
     <section className="pb-20">
