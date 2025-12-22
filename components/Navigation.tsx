@@ -4,9 +4,19 @@ import { User } from '@/types/general';
 // import { store } from '@/lib/store';
 import { Button, Input } from './UI';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export const Navigation: React.FC<{ user: User | null }> = ({ user }) => {
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  function handleNavigate(e: React.MouseEvent<HTMLButtonElement>) {
+    // e.preventDefault();
+    const content = e.currentTarget.textContent.toLowerCase()
+    if (content === 'log in') return router.push('/auth/login')
+    if (content === 'sign up') return router.push('/auth/signup')
+    console.log(e.target);
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -34,8 +44,8 @@ export const Navigation: React.FC<{ user: User | null }> = ({ user }) => {
             </>
           ) : (
             <div className="flex gap-2">
-              <Button variant="ghost">Log In</Button>
-              <Button>Sign Up</Button>
+              <Button variant="ghost" type='button' onClick={handleNavigate}>Log In</Button>
+              <Button type='button' onClick={handleNavigate}>Sign Up</Button>
             </div>
           )}
         </div>
@@ -50,7 +60,7 @@ export const Navigation: React.FC<{ user: User | null }> = ({ user }) => {
           <Input placeholder="Search..." />
           {!user && (
             <div className="flex flex-col gap-2">
-              <Button variant="secondary">Log In</Button>
+              <Button variant="secondary" onClick={handleNavigate}>Log In</Button>
               <Button>Sign Up</Button>
             </div>
           )}
