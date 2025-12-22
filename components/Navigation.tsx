@@ -33,8 +33,8 @@ export const Navigation: React.FC<{ user: User | null }> = ({ user }) => {
             </>
           ) : (
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => store.navigate('/login')}>Log In</Button>
-              <Button onClick={() => store.navigate('/signup')}>Sign Up</Button>
+              <Button variant="ghost" onClick={() => store.navigate('/auth/login')}>Log In</Button>
+              <Button onClick={() => store.navigate('/auth/signup')}>Sign Up</Button>
             </div>
           )}
         </div>
