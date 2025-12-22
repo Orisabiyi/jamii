@@ -31,7 +31,7 @@ export const PropertyCard: React.FC<{ property: Property }> = ({ property }) => 
       </div>
 
       <div className="aspect-[4/3] w-full bg-gray-100 relative cursor-pointer" onClick={() => store.navigate('/properties/view', property.id)}>
-        <Image src={property.images[0]} alt={property.title} fill className="object-cover" />
+        <Image src={property.images[0]} alt={property.title} className="object-cover" />
         <div className="absolute top-3 right-3">
           <span className={`${isPurchase ? 'bg-purple-600' : 'bg-primary'} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
             {isPurchase ? 'BEDSPACE PURCHASE' : 'FOR RENT'}
