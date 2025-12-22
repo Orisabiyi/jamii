@@ -1,246 +1,67 @@
-
-import React, { useState } from 'react';
-import { Heart, MessageCircle, MapPin, Bed, Bath, ChevronLeft, ChevronRight, Share2, Video, Bookmark, Check } from 'lucide-react';
+import React from 'react';
+import { Heart, MessageSquare, Share2, Bookmark, CheckCircle2, BedDouble, Bath, MoreHorizontal } from 'lucide-react';
+import { Property, store } from '../lib/store';
+import { Button } from './UI';
 import Image from 'next/image';
-import { Property, User } from '@/app/types/gen';
-import { useRouter } from 'next/navigation';
 
-interface PropertyCardProps {
-  property: Property;
-  currentUser: User | null;
-  onLike: (id: string) => void;
-  onComment: (id: string, content: string) => void;
-  onSave?: (id: string) => void;
-}
+export const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
+  const isPurchase = property.listingType === 'purchase_bedspace';
 
-export const PropertyCard: React.FC<PropertyCardProps> = ({ property, currentUser, onLike, onComment, onSave }) => {
-  const router = useRouter();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [justShared, setJustShared] = useState(false);
-
-  const isLiked = currentUser && property.likes.includes(currentUser.id);
-  const isSaved = currentUser?.saved?.includes(property.id);
-
-  const mediaItems = [
-    ...(property.video ? [{ type: 'video' as const, url: property.video }] : []),
-    ...property.images.map(img => ({ type: 'image' as const, url: img }))
-  ];
-
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % mediaItems.length);
-  };
-
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
-  };
-
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (commentText.trim()) {
-      onComment(property.id, commentText);
-      setCommentText('');
-    }
-  };
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave(property.id);
-    }
-  };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: property.title,
-      text: `Check out ${property.title} in ${property.location} on Jamii!`,
-      url: window.location.href,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.log('Share failed:', err);
-        console.log('Share canceled');
-      }
-    } else {
-      navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`);
-      setJustShared(true);
-      setTimeout(() => setJustShared(false), 2000);
-    }
-  };
-
-  const handleProfileClick = () => {
-    router.push(`/profile?id=${property.ownerId}`);
-  };
+  // const timeAgo = (dateStr: string) => {
+  //   const seconds = Math.floor((new Date().getTime() - new Date(dateStr).getTime()) / 1000);
+  //   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  //   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  //   return `${Math.floor(seconds / 86400)}d ago`;
+  // };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6 max-w-xl mx-auto">
-      {/* Header */}
-      <div className="p-4 flex items-center justify-between">
-        <div
-          className="flex items-center gap-3 cursor-pointer group"
-          onClick={handleProfileClick}
-        >
-          <Image
-            src={property.ownerAvatar}
-            alt={property.ownerName}
-            className="w-10 h-10 rounded-full object-cover border border-gray-100 group-hover:ring-2 group-hover:ring-indigo-100 transition-all"
-          />
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow mb-6">
+      <div className="p-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Image src={property.owner.avatar} width={36} height={36} className="rounded-full" alt={property.owner.name} />
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-indigo-600 transition-colors">{property.ownerName}</h3>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold text-sm text-gray-900">{property.owner.handle}</span>
+              {property.owner.verified && <CheckCircle2 className="w-3 h-3 text-blue-500 fill-blue-500" />}
+            </div>
             <p className="text-xs text-gray-500">{property.location}</p>
           </div>
         </div>
-        <div className="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-md font-medium">
-          ${property.price}/mo
+        <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-5 h-5" /></button>
+      </div>
+
+      <div className="aspect-[4/3] w-full bg-gray-100 relative cursor-pointer" onClick={() => store.navigate('/properties/view', property.id)}>
+        <Image src={property.images[0]} alt={property.title} fill className="object-cover" />
+        <div className="absolute top-3 right-3">
+          <span className={`${isPurchase ? 'bg-purple-600' : 'bg-primary'} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+            {isPurchase ? 'BEDSPACE PURCHASE' : 'FOR RENT'}
+          </span>
         </div>
       </div>
 
-      {/* Media Carousel */}
-      <div className="relative aspect-[4/3] bg-gray-100 group">
-        {mediaItems[currentImageIndex].type === 'video' ? (
-          <video
-            src={mediaItems[currentImageIndex].url}
-            controls
-            className="w-full h-full object-contain bg-black"
-          />
-        ) : (
-          <Image
-            src={mediaItems[currentImageIndex].url}
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-        )}
-
-        {mediaItems.length > 1 && (
-          <>
-            <button
-              onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            >
-              <ChevronRight size={20} />
-            </button>
-
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-              {mediaItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors flex items-center justify-center ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                    }`}
-                />
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Type Indicator Badge */}
-        {mediaItems[currentImageIndex].type === 'video' && (
-          <div className="absolute top-3 right-3 bg-black/60 text-white p-1.5 rounded-full z-0 pointer-events-none">
-            <Video size={14} />
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="p-4 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => onLike(property.id)}
-              className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-red-500' : 'text-gray-600 hover:text-gray-900'
-                }`}
-            >
-              <Heart size={24} fill={isLiked ? "currentColor" : "none"} />
-            </button>
-            <button
-              onClick={() => setShowComments(!showComments)}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <MessageCircle size={24} />
-            </button>
-            <button
-              onClick={handleShare}
-              className="text-gray-600 hover:text-gray-900 relative"
-            >
-              {justShared ? <Check size={24} className="text-green-600" /> : <Share2 size={24} />}
-            </button>
-          </div>
-          <button
-            onClick={handleSave}
-            className={`transition-colors ${isSaved ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900'}`}
-          >
-            <Bookmark size={24} fill={isSaved ? "currentColor" : "none"} />
+      <div className="px-3 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button className={`${property.isLiked ? 'text-red-500' : 'text-gray-600'}`} onClick={() => store.toggleLike(property.id)}>
+            <Heart className={`w-6 h-6 ${property.isLiked ? 'fill-current' : ''}`} />
           </button>
+          <button className="text-gray-600"><MessageSquare className="w-6 h-6" /></button>
+          <button className="text-gray-600"><Share2 className="w-6 h-6" /></button>
         </div>
-
-        <div className="mb-2">
-          <span className="font-semibold text-gray-900">{property.likes.length} likes</span>
-        </div>
-
-        <div>
-          <span className="font-semibold text-gray-900 text-sm mr-2">{property.ownerName}</span>
-          <span className="text-gray-800 text-sm">{property.title} • {property.type}</span>
-          <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-            {property.description}
-          </p>
-        </div>
-
-        <div className="flex gap-4 mt-3 text-sm text-gray-500">
-          <span className="flex items-center gap-1"><Bed size={16} /> {property.bedrooms} Bed</span>
-          <span className="flex items-center gap-1"><Bath size={16} /> {property.bathrooms} Bath</span>
-          <span className="flex items-center gap-1"><MapPin size={16} /> {property.location}</span>
-        </div>
+        <button className="text-gray-600"><Bookmark className={`w-6 h-6 ${property.isSaved ? 'fill-gray-900' : ''}`} /></button>
       </div>
 
-      {/* Comments Section */}
       <div className="px-4 pb-4">
-        {property.comments.length > 0 && !showComments && (
-          <button
-            onClick={() => setShowComments(true)}
-            className="text-gray-500 text-sm mt-1 mb-2"
-          >
-            View all {property.comments.length} comments
-          </button>
-        )}
-
-        {showComments && (
-          <div className="mt-2 space-y-3 mb-4 max-h-40 overflow-y-auto no-scrollbar">
-            {property.comments.map(comment => (
-              <div key={comment.id} className="flex gap-2 items-start text-sm">
-                <span className="font-semibold text-gray-900 shrink-0">{comment.userName}</span>
-                <span className="text-gray-700">{comment.content}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {currentUser && (
-          <form onSubmit={handleSubmitComment} className="flex items-center gap-2 mt-2 border-t border-gray-100 pt-3">
-            <Image src={currentUser.avatar} alt="You" className="w-6 h-6 rounded-full" />
-            <input
-              type="text"
-              placeholder="Add a comment..."
-              className="flex-1 bg-transparent text-sm focus:outline-none placeholder-gray-400 text-gray-900"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-            />
-            {commentText.trim() && (
-              <button type="submit" className="text-indigo-600 font-semibold text-sm">
-                Post
-              </button>
-            )}
-          </form>
-        )}
+        <h3 className="font-semibold text-gray-900 leading-tight mb-1 cursor-pointer" onClick={() => store.navigate('/properties/view', property.id)}>
+          {property.title}
+        </h3>
+        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+          <span className="flex items-center gap-1"><BedDouble className="w-3 h-3" /> {property.specs.beds} bed</span>
+          <span className="flex items-center gap-1"><Bath className="w-3 h-3" /> {property.specs.baths} bath</span>
+        </div>
+        <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+          <span className="text-lg font-bold text-primary-dark">{property.currency}{property.price.toLocaleString()}</span>
+          <Button variant="secondary" className="px-3 py-1 text-sm h-8" onClick={() => store.navigate('/properties/view', property.id)}>View</Button>
+        </div>
       </div>
     </div>
   );
