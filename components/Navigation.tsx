@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, MessageSquare, Bell, Search, Menu, X } from 'lucide-react';
-import { store, User } from '../lib/store';
+import { User } from '@/types/general';
+import { store } from '@/lib/store';
 import { Button, Input } from './UI';
 import Image from 'next/image';
 

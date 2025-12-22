@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@/app/types/gen';
+import { User } from '@/types/general';
 import { db } from './db';
 
 interface AuthContextType {

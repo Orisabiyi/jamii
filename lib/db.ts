@@ -1,5 +1,5 @@
 
-import { Property, User, UserRole } from '@/app/types/gen';
+import { Property, User, UserRole } from '@/types/general';
 
 const STORAGE_KEYS = {
   USERS: 'jamii_users',

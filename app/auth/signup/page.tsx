@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { Search, LayoutGrid } from 'lucide-react';
-import { store, UserType } from '@/lib/store';
+import { store } from '@/lib/store';
 import { Button } from '@/components/UI';
+import { UserType } from '@/types/general';
 
 export default function Page() {
-  const [role, setRole] = useState<UserType>(null);
+  const [role, setRole] = useState<UserType | null>(null);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

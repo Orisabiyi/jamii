@@ -1,8 +1,9 @@
 import React from 'react';
 import { Heart, MessageSquare, Share2, Bookmark, CheckCircle2, BedDouble, Bath, MoreHorizontal } from 'lucide-react';
-import { Property, store } from '../lib/store';
+import { store } from '../lib/store';
 import { Button } from './UI';
 import Image from 'next/image';
+import { Property } from '@/types/general';
 
 export const PropertyCard: React.FC<{ property: Property }> = ({ property }) => {
   const isPurchase = property.listingType === 'purchase_bedspace';
